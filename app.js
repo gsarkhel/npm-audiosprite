@@ -1,10 +1,10 @@
 // If 'audiosprite' is not recognized then run 'npm install -g audiosprite'
 
-const fs = require('fs');
-const path = require('path');
+const { readdirSync, readFileSync, writeFileSync } = require('fs');
+const { resolve } = require('path');
 const { exec } = require('child_process');
 
-let files = fs.readdirSync(path.resolve('./src'));
+let files = readdirSync(resolve('./src'));
 files = files.map(str => `src/${str}`);
 const fileStr = files.join(' ');
 
@@ -16,3 +16,15 @@ const child = exec(script);
 child.stdout.on('data', (data) => {
     console.log(data);
 });
+
+child.on('close', (code) => {
+    console.log(`child process close all stdio with code ${code}`);
+
+    updateJSON();
+});
+
+const updateJSON = () => {
+    let jsonStr = readFileSync('./output/audiosprite.json', 'utf8');
+    jsonStr = jsonStr.replace('"urls":', '"src":');
+    writeFileSync('./output/audiosprite.json', jsonStr, 'utf8')
+}
